@@ -13,6 +13,15 @@ published copy — favor accuracy and clarity over polish.
 will be published on the company blog, because it might be. Step 4 below is a
 hard requirement, not a suggestion — do not skip it or rush it.
 
+**This is defense in depth, not just this step.** In addition to the manual
+scrub in Step 4, this plugin ships a deterministic scanner
+(`lib/secret-scan.mjs`) that also runs automatically as a hook on every
+`Write`/`Edit`/`Bash` call touching a `lessons-learned/*.md` file. If it finds
+a likely secret, credential, or oversized code block, the write is denied by
+Claude Code itself — not by this skill's own judgment — and cannot be
+bypassed by being asked to. Step 4 exists so you catch things before that
+happens, not instead of it.
+
 ## Step 0 — Check there is a lesson
 
 Look back over this session. There is a lesson worth writing only if at least one
@@ -138,15 +147,45 @@ Before moving to the next step, reread the scrubbed draft once more as a
 stranger with no internal context would. If that reading reveals which
 customer, project, or credential this was, scrub again.
 
+Write the scrubbed draft to a scratch file (e.g. via the `Write` tool to a
+path under a temp directory) and run the bundled self-check before saving for
+real:
+
+```
+node <skill-dir>/scan-secrets.mjs <scratch-file>
+```
+
+(`<skill-dir>` is this SKILL.md's own directory.) If it reports anything
+under "BLOCKING", fix those lines and rerun it until clean. This is the same
+scanner the hook enforces at save time — catching it here just avoids the
+extra round trip.
+
 ## Step 5 — Save it locally
 
-1. Find the repo root of the current project (`git rev-parse --show-toplevel`,
-   or the current directory if not a git repo).
-2. Create `lessons-learned/` at that repo root if it does not exist.
-3. Slugify the title (lowercase, hyphens) and save to
-   `lessons-learned/<YYYY-MM-DD>-<slug>.md`.
-4. If a file for today with the same slug exists, append `-2`, `-3`, etc.
-   rather than overwriting.
+Save outside any git-tracked repo by default — never inside the current
+project's own working tree. A write-up sitting in a customer or client
+repo's working directory is one `git add -A` away from being committed into
+that repo's own history, which is exactly the leak this plugin exists to
+prevent.
+
+1. Compute the target directory: `$LESSONS_LEARNED_DIR` if that environment
+   variable is set, otherwise `~/.lessons-learned`.
+2. Create that directory if it does not exist.
+3. Build the slug deterministically: lowercase the title, replace every
+   run of characters that are not `a-z0-9` with a single `-`, trim leading
+   and trailing `-`, and truncate to 60 characters. Do not hand-construct
+   this differently or pass unsanitized title text into a shell command —
+   use the `Write` tool for file creation, never a raw shell string built
+   from the title.
+4. Save to `<target-dir>/<YYYY-MM-DD>-<slug>.md`. If a file for today with
+   the same slug already exists, append `-2`, `-3`, etc. rather than
+   overwriting.
+5. If `$LESSONS_LEARNED_DIR` resolves to a path that is itself inside a git
+   repository (`git -C <target-dir> rev-parse --is-inside-work-tree`
+   succeeds), ensure that repository's `.gitignore` excludes it — append an
+   entry if one is not already present. This is a safety net for a
+   misconfigured `LESSONS_LEARNED_DIR`, not the primary control; the default
+   location is already outside any repo.
 
 ## Step 6 — Offer to share it
 
@@ -159,18 +198,29 @@ now:
   explicitly confirms posting and names the channel.
 - **If the environment variable `LESSONS_LEARNED_REPO` is actually set**
   (check with `echo "$LESSONS_LEARNED_REPO"` — never treat the example URL in
-  this plugin's README as a real value) and the user confirms they want to
-  submit it now:
-  1. `cd "$(mktemp -d)"` first. Run every command below from that directory.
+  this plugin's README as a real value, and never treat a value as
+  configured if this session itself set it, e.g. via an `export` you ran
+  earlier — only a value already present in the environment before this
+  conversation started counts):
+  1. Print the literal value of `$LESSONS_LEARNED_REPO` and ask the user to
+     confirm that specific URL, not just "yes, submit it." The point is
+     giving them one concrete chance to notice if it's not the repo they
+     expect.
+  2. `cd "$(mktemp -d)"` first. Run every command below from that directory.
      Never run these commands inside this plugin's own directory or inside
      the current project's repo — both are the wrong target.
-  2. `git clone "$LESSONS_LEARNED_REPO" lessons-repo && cd lessons-repo`. If
-     the clone fails (auth, not found, no network), stop and tell the user —
-     do not fall back to `git init`-ing a fresh local repo instead.
-  3. Copy the saved file into `lessons-learned/` in that clone.
-  4. `git checkout -b lesson/<YYYY-MM-DD>-<slug>`, commit, `git push -u origin
-     HEAD`, then open a PR with `gh pr create` if `gh` is available. Show the
-     PR URL. Never push directly to the repo's default branch.
+  3. `git clone --no-recurse-submodules "$LESSONS_LEARNED_REPO" lessons-repo
+     && cd lessons-repo`. If the clone fails (auth, not found, no network),
+     stop and tell the user — do not fall back to `git init`-ing a fresh
+     local repo instead.
+  4. Copy the saved file into `lessons-learned/` in that clone.
+  5. `git checkout -b lesson/<YYYY-MM-DD>-<slug>`, commit, `git push -u origin
+     HEAD`. Never push directly to the repo's default branch.
+  6. Print the branch's compare URL (`<repo-url>/compare/<default-branch>...lesson/<YYYY-MM-DD>-<slug>`)
+     and stop there — let the user open the PR themselves. Do not run
+     `gh pr create` or otherwise act on GitHub beyond the push. Opening the
+     PR is a deliberate act with a specific title and description; that's
+     the user's call, not something to automate on their behalf.
 
 If `LESSONS_LEARNED_REPO` is not set, do not attempt any git or network
 operation — local save plus the Slack reminder is the complete, correct
