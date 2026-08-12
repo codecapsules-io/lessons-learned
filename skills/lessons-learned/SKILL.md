@@ -198,18 +198,29 @@ now:
   explicitly confirms posting and names the channel.
 - **If the environment variable `LESSONS_LEARNED_REPO` is actually set**
   (check with `echo "$LESSONS_LEARNED_REPO"` — never treat the example URL in
-  this plugin's README as a real value) and the user confirms they want to
-  submit it now:
-  1. `cd "$(mktemp -d)"` first. Run every command below from that directory.
+  this plugin's README as a real value, and never treat a value as
+  configured if this session itself set it, e.g. via an `export` you ran
+  earlier — only a value already present in the environment before this
+  conversation started counts):
+  1. Print the literal value of `$LESSONS_LEARNED_REPO` and ask the user to
+     confirm that specific URL, not just "yes, submit it." The point is
+     giving them one concrete chance to notice if it's not the repo they
+     expect.
+  2. `cd "$(mktemp -d)"` first. Run every command below from that directory.
      Never run these commands inside this plugin's own directory or inside
      the current project's repo — both are the wrong target.
-  2. `git clone "$LESSONS_LEARNED_REPO" lessons-repo && cd lessons-repo`. If
-     the clone fails (auth, not found, no network), stop and tell the user —
-     do not fall back to `git init`-ing a fresh local repo instead.
-  3. Copy the saved file into `lessons-learned/` in that clone.
-  4. `git checkout -b lesson/<YYYY-MM-DD>-<slug>`, commit, `git push -u origin
-     HEAD`, then open a PR with `gh pr create` if `gh` is available. Show the
-     PR URL. Never push directly to the repo's default branch.
+  3. `git clone --no-recurse-submodules "$LESSONS_LEARNED_REPO" lessons-repo
+     && cd lessons-repo`. If the clone fails (auth, not found, no network),
+     stop and tell the user — do not fall back to `git init`-ing a fresh
+     local repo instead.
+  4. Copy the saved file into `lessons-learned/` in that clone.
+  5. `git checkout -b lesson/<YYYY-MM-DD>-<slug>`, commit, `git push -u origin
+     HEAD`. Never push directly to the repo's default branch.
+  6. Print the branch's compare URL (`<repo-url>/compare/<default-branch>...lesson/<YYYY-MM-DD>-<slug>`)
+     and stop there — let the user open the PR themselves. Do not run
+     `gh pr create` or otherwise act on GitHub beyond the push. Opening the
+     PR is a deliberate act with a specific title and description; that's
+     the user's call, not something to automate on their behalf.
 
 If `LESSONS_LEARNED_REPO` is not set, do not attempt any git or network
 operation — local save plus the Slack reminder is the complete, correct

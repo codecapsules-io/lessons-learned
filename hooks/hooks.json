@@ -1,5 +1,5 @@
 {
-  "description": "Blocks Write/Edit/Bash calls that would put a secret, credential, or oversized code block into a lessons-learned/*.md file.",
+  "description": "Blocks Write/Edit/Bash calls that would put a secret, credential, or oversized code block into a lessons-learned file. Denies (rather than silently allowing) if Node.js isn't available to run the scanner, but only for calls that look lessons-learned-related — unrelated work is unaffected either way.",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scan-write.mjs\"",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/scan-write-wrapper.sh\"",
             "timeout": 10
           }
         ]
