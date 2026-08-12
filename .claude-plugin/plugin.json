@@ -1,8 +1,13 @@
 {
   "name": "lessons-learned",
+  "version": "1.0.0",
   "description": "Capture a short engineering lesson from this session in ASD-STE100 Simplified Technical English and save it locally for team review.",
   "author": {
     "name": "Code Capsules Engineering",
-    "email": "eng@codecapsules.io"
-  }
+    "email": "support@codecapsules.io"
+  },
+  "homepage": "https://github.com/codecapsules-io/lessons-learned",
+  "repository": "https://github.com/codecapsules-io/lessons-learned",
+  "license": "MIT",
+  "keywords": ["retro", "postmortem", "documentation", "team"]
 }

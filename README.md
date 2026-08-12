@@ -14,8 +14,11 @@ At the end of a session that taught you something worth keeping, run:
 
 The skill checks whether the session actually produced a lesson (it will say
 so and stop if not), writes it up, and saves it to
-`lessons-learned/<date>-<slug>.md` in the current repo. It then tells you where
-to share it — by default, that's pasting the path into the team Slack channel.
+`~/.lessons-learned/<date>-<slug>.md` — outside any git-tracked repo by
+default, so a write-up never ends up sitting in a customer or client repo's
+working tree. Set `LESSONS_LEARNED_DIR` to change where it saves. It then
+tells you where to share it — by default, that's pasting the path into the
+team Slack channel.
 
 ## Optional: submit as a PR instead of Slack
 
@@ -35,6 +38,37 @@ branch.
 **Every writeup is scrubbed of customer names, internal codenames,
 infrastructure identifiers, and secrets before it is ever saved — see Step 4
 in the skill — because these are meant to become public.**
+
+## How leaks are actually prevented
+
+The scrub in Step 4 is the model reviewing its own draft — useful, but not a
+security boundary, since a user can simply ask it to skip that step. This
+plugin also ships a deterministic scanner (`lib/secret-scan.mjs`, plain
+regex and entropy checks, no external dependency) that runs two ways:
+
+- As a **hook** (`hooks/hooks.json` + `hooks/scan-write.mjs`): Claude Code
+  itself denies any `Write`/`Edit`/`Bash` call that would put a matched
+  secret, credential, private key, or an oversized code block into a
+  `lessons-learned/*.md` file. This is enforced by the harness, not by the
+  model's judgment, so it holds even if the model is asked to bypass it.
+- As a **CLI self-check** (`skills/lessons-learned/scan-secrets.mjs`) the
+  skill runs on its own draft before saving, and that anyone can run by hand
+  or from CI against an already-saved file:
+  ```
+  node skills/lessons-learned/scan-secrets.mjs path/to/lesson.md
+  ```
+  Exit code `0` means clean (or warnings only); `1` means it found something
+  that should block the write.
+
+High-confidence patterns (known key/token formats, private key blocks,
+credentials embedded in a URL, an explicit `password=`/`token=` assignment)
+are hard blocks. Lower-confidence signals (a bare IP address, a long
+high-entropy string with no keyword context) are surfaced as warnings rather
+than blocked outright, because a hard gate there has a high enough
+false-positive rate (git SHAs, resource IDs, hashes) that it would just teach
+people to route around the tool. None of this replaces a human actually
+reading the PR before merge — see the parent repo's `SECURITY.md` for the
+full threat model.
 
 ## Why ASD-STE100
 

@@ -1,0 +1,17 @@
+{
+  "description": "Blocks Write/Edit/Bash calls that would put a secret, credential, or oversized code block into a lessons-learned/*.md file.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scan-write.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
