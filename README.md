@@ -20,15 +20,21 @@ to share it — by default, that's pasting the path into the team Slack channel.
 ## Optional: submit as a PR instead of Slack
 
 Set `LESSONS_LEARNED_REPO` to the git URL of your shared lessons-learned repo
-(e.g. in your shell profile or `.env`):
+(e.g. in your shell profile or `.env`) — this is a placeholder, not a real
+value, until such a repo exists:
 
 ```
-export LESSONS_LEARNED_REPO=git@github.com:codecapsules-io/lessons-learned.git
+export LESSONS_LEARNED_REPO=git@github.com:<your-org>/<your-lessons-repo>.git
 ```
 
 With this set, the skill can open a PR against that repo directly instead of
-asking you to paste the path in Slack. It always asks for confirmation first
-and never pushes to the default branch.
+asking you to paste the path in Slack. It always clones into a fresh temp
+directory, asks for confirmation first, and never pushes to the default
+branch.
+
+**Every writeup is scrubbed of customer names, internal codenames,
+infrastructure identifiers, and secrets before it is ever saved — see Step 4
+in the skill — because these are meant to become public.**
 
 ## Why ASD-STE100
 

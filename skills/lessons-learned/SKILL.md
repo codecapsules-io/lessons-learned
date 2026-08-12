@@ -157,13 +157,20 @@ now:
   team's lessons-learned Slack channel themselves. Do not post to Slack
   yourself unless a Slack tool is available in this session AND the user
   explicitly confirms posting and names the channel.
-- **If `LESSONS_LEARNED_REPO` is set** (a git URL for the shared lessons repo)
-  and the user confirms they want to submit it now: clone or update a copy of
-  that repo in a scratch directory, copy the new file into its
-  `lessons-learned/` directory, create a branch named
-  `lesson/<YYYY-MM-DD>-<slug>`, commit, push, and open a PR with `gh pr create`
-  if `gh` is available. Show the PR URL. Never push directly to the repo's
-  default branch.
+- **If the environment variable `LESSONS_LEARNED_REPO` is actually set**
+  (check with `echo "$LESSONS_LEARNED_REPO"` — never treat the example URL in
+  this plugin's README as a real value) and the user confirms they want to
+  submit it now:
+  1. `cd "$(mktemp -d)"` first. Run every command below from that directory.
+     Never run these commands inside this plugin's own directory or inside
+     the current project's repo — both are the wrong target.
+  2. `git clone "$LESSONS_LEARNED_REPO" lessons-repo && cd lessons-repo`. If
+     the clone fails (auth, not found, no network), stop and tell the user —
+     do not fall back to `git init`-ing a fresh local repo instead.
+  3. Copy the saved file into `lessons-learned/` in that clone.
+  4. `git checkout -b lesson/<YYYY-MM-DD>-<slug>`, commit, `git push -u origin
+     HEAD`, then open a PR with `gh pr create` if `gh` is available. Show the
+     PR URL. Never push directly to the repo's default branch.
 
 If `LESSONS_LEARNED_REPO` is not set, do not attempt any git or network
 operation — local save plus the Slack reminder is the complete, correct
