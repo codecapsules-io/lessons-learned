@@ -6,16 +6,27 @@ local `.md` file.
 
 ## Install
 
-Pending review on the [Claude Code community marketplace](https://github.com/anthropics/claude-plugins-community)
-(see `PUBLISHING.md`). Once approved:
+This repo is self-describing as its own one-plugin marketplace
+(`.claude-plugin/marketplace.json`, `source: "./"`), so it installs directly
+today, independent of community review:
+
+```
+/plugin marketplace add codecapsules-io/lessons-learned
+/plugin install lessons-learned@codecapsules
+```
+
+It's also submitted to the [Claude Code community marketplace](https://github.com/anthropics/claude-plugins-community)
+(see `PUBLISHING.md`) for public discovery. Once approved, it's also
+installable from there:
 
 ```
 /plugin marketplace add anthropics/claude-plugins-community
 /plugin install lessons-learned@claude-community
 ```
 
-Before then, try it locally with `--plugin-dir` pointing at a clone of this
-repo, or with `--plugin-url` pointing at a release archive.
+Both point at the same plugin code — use whichever is more convenient. For
+a one-off try without installing anything, use `--plugin-dir` pointing at a
+local clone, or `--plugin-url` pointing at a release archive.
 
 ## Use
 
