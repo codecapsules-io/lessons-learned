@@ -22,11 +22,16 @@ community marketplace.
 - [x] The repo is public: `git@github.com:codecapsules-io/lessons-learned.git`.
       Submission works off this repo directly, not the `codecapsules-plugins`
       marketplace wrapper.
-- [x] Fixed the nested-repo issue: `claude-plugins/.claude-plugin/marketplace.json`
-      now points at this repo via a GitHub source object
-      (`{ "source": "github", "repo": "codecapsules-io/lessons-learned" }`)
-      instead of a relative path, so `claude-plugins` won't record this
-      directory as a broken gitlink when it's git-initialized.
+- [x] Sidestepped the nested-repo issue entirely: rather than a separate
+      `claude-plugins` wrapper repo pointing here, `marketplace.json` now
+      lives directly in this repo (`.claude-plugin/marketplace.json`,
+      `source: "./"`), so this repo is its own marketplace —
+      `/plugin marketplace add codecapsules-io/lessons-learned` works with no
+      wrapper needed. The `claude-plugins` repo's own entry for this plugin
+      (a GitHub-source pointer at this repo) still works too, but is now
+      redundant for this specific plugin — worth removing there once you've
+      decided whether `claude-plugins` is still useful for other, future
+      plugins.
 - [ ] **Submit** — needs a human with an account (see below).
 - [ ] **Review** — a few days per Anthropic's docs, automated safety screening
       + the same `validate` check.

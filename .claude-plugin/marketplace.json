@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "lessons-learned",
+  "description": "Marketplace for the lessons-learned plugin (Code Capsules engineering).",
+  "owner": {
+    "name": "Code Capsules",
+    "email": "eng@codecapsules.io"
+  },
+  "plugins": [
+    {
+      "name": "lessons-learned",
+      "description": "Capture a short engineering lesson from this session in ASD-STE100 Simplified Technical English and save it locally for team review.",
+      "author": {
+        "name": "Code Capsules Engineering",
+        "email": "support@codecapsules.io"
+      },
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

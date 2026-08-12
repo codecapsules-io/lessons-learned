@@ -4,6 +4,16 @@ A Claude Code skill that turns a useful engineering session into a short,
 plain-language writeup in ASD-STE100 Simplified Technical English, saved as a
 local `.md` file.
 
+## Install
+
+This repo is its own marketplace — one-time setup, then it's available in
+every session:
+
+```
+/plugin marketplace add codecapsules-io/lessons-learned
+/plugin install lessons-learned@lessons-learned
+```
+
 ## Use
 
 At the end of a session that taught you something worth keeping, run:
@@ -67,8 +77,7 @@ high-entropy string with no keyword context) are surfaced as warnings rather
 than blocked outright, because a hard gate there has a high enough
 false-positive rate (git SHAs, resource IDs, hashes) that it would just teach
 people to route around the tool. None of this replaces a human actually
-reading the PR before merge — see the parent repo's `SECURITY.md` for the
-full threat model.
+reading the PR before merge — see `SECURITY.md` for the full threat model.
 
 ## Why ASD-STE100
 
